@@ -1,65 +1,171 @@
-import Image from "next/image";
+'use client'
+
+import { ProjectItem } from "@/components/project-item";
+import { ProjectDetail } from "@/components/project-detail";
+import { Project, PROJECTS } from "@/lib/data";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCursor } from "@/context/cursor-context";
 
 export default function Home() {
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [showDetailPage, setShowDetailPage] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  const [isEmailHovered, setIsEmailHovered] = useState(false);
+
+  const { setCursorType, setDimensions, resetCursor } = useCursor();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="flex min-h-screen flex-col md:flex-row relative">
+      <motion.div
+        layout
+        className="w-full h-full relative"
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+
+        {/* Center: Bio */}
+        <motion.div
+          key="bio"
+          className="relative md:absolute left-0 md:left-1/2 top-0 md:-translate-x-1/2 flex flex-col justify-between p-6 md:p-24 z-20 pointer-events-none w-full md:w-[600px]"
+          initial={{ opacity: 1 }}
+          animate={{
+            opacity: (isFocusMode || showDetailPage) ? 0 : 1,
+            filter: isFocusMode ? 'blur(10px)' : 'blur(0px)'
+          }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          {/* Top: Title */}
+          <div className="pt-[30vh] pointer-events-auto w-full">
+            <h1 className="text-[22px] font-bold leading-[1.4] tracking-tight text-black">
+              Benedict Kunzmann,
+              <br />
+              software developer for <span className="text-[#EB3EA1] cursor-pointer">Mobile</span> and <span className="text-[#EB3EA1] cursor-pointer">Python</span>
+            </h1>
+          </div>
+
+          {/* Bottom: Links */}
+          {/* Bottom: Links */}
+          <div className="flex gap-6 pb-24 pointer-events-auto pt-[2vh] items-center">
+            <motion.a
+              href="/about"
+              className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity p-2 -m-2 rounded-lg cursor-none"
+              layoutId="about-link"
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                setDimensions({ width: rect.width, height: rect.height, radius: "8px" })
+                setCursorType('link')
+              }}
+              onMouseLeave={() => {
+                resetCursor()
+                setDimensions(undefined)
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
+              About
+            </motion.a>
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href="https://github.com/benekunzi"
+              className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity p-2 -m-2 rounded-lg cursor-none"
+              onMouseEnter={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                setDimensions({ width: rect.width, height: rect.height, radius: "8px" })
+                setCursorType('link')
+              }}
+              onMouseLeave={() => {
+                resetCursor()
+                setDimensions(undefined)
+              }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+              GitHub
+            </a>
+            <div
+              onMouseEnter={(e) => {
+                setIsEmailHovered(true)
+                const rect = e.currentTarget.getBoundingClientRect()
+                // Add some padding visually if needed, but rect is precise
+                setDimensions({ width: rect.width + 10, height: rect.height + 10, radius: "8px" })
+                setCursorType('link')
+              }}
+              onMouseLeave={() => {
+                setIsEmailHovered(false)
+                resetCursor()
+                setDimensions(undefined)
+              }}
+              className="flex items-center h-[26px] overflow-hidden relative cursor-none p-1 -m-1"
+            >
+              <AnimatePresence mode="wait">
+                {!isEmailHovered ? (
+                  <motion.a
+                    key="email-text"
+                    initial={{ opacity: 1, y: -40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 1, y: 40 }}
+                    transition={{ duration: 0.3 }}
+                    href="mailto:benedict.kunzmann@gmail.com"
+                    className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity whitespace-nowrap block cursor-none"
+                  >
+                    E-Mail
+                  </motion.a>
+                ) : (
+                  <motion.div
+                    key="email-address"
+                    initial={{ opacity: 1, y: -40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 1, y: 40 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-2"
+                  >
+                    <a
+                      href="mailto:benedict.kunzmann@gmail.com"
+                      className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity whitespace-nowrap cursor-none"
+                    >
+                      benedict.kunzmann@gmail.com
+                    </a>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Left side: Project List */}
+        <AnimatePresence>
+          <motion.div
+            key="list"
+            className="relative md:absolute left-0 md:left-[15%] top-0 pt-[10vh] md:pt-[30vh] z-20 px-6 md:px-0"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <div className="flex flex-col gap-1 w-full">
+              {PROJECTS.map((project) => (
+                <ProjectItem
+                  key={project.id}
+                  id={project.id}
+                  title={project.title}
+                  year={project.year}
+                  videoUrl={project.videoUrl}
+                  aspectRatio={project.aspectRatio}
+                  onHoverStart={() => setIsFocusMode(true)}
+                  onHoverEnd={() => setIsFocusMode(false)}
+                  onClick={() => {
+                    setSelectedProject(project);
+                    setShowDetailPage(true);
+                  }}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <motion.div>
+          <ProjectDetail
+            project={selectedProject}
+            onClose={() => {
+              setShowDetailPage(false);
+              setSelectedProject(null);
+            }}
+          />
+        </motion.div>
+      </motion.div>
+    </main>
   );
 }

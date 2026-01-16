@@ -9,12 +9,20 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.25.0",
+    "lenis": "^1.3.17",
+    "matter-js": "^0.20.0",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-intersection-observer": "^10.0.0",
+    "tailwind-merge": "^3.4.0",
+    "tech-stack-icons": "^3.3.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/matter-js": "^0.20.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

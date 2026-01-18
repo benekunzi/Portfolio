@@ -45,9 +45,9 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                 </motion.h1>
 
                 {/* Content Row: Description | Video */}
-                <div className="flex gap-12 mb-16">
+                <div className="flex flex-col-reverse lg:flex-row gap-12 mb-16">
                     {/* Description (Left) */}
-                    <div className="w-1/3 pt-4">
+                    <div className="w-full lg:w-1/3 pt-4">
                         <motion.p
                             className="text-[18px] leading-[1.6] text-black/80 font-[system-ui]"
                             initial={{ y: 20, opacity: 0 }}
@@ -77,19 +77,24 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </div>
 
                     {/* Video (Right) */}
-                    <div className="w-2/3">
+                    <div className="flex-1 flex justify-center items-start">
                         <motion.div
                             layoutId={`video-${project.id}`}
-                            className="w-full aspect-video rounded-xl overflow-hidden shadow-2xl"
+                            className={`rounded-xl overflow-hidden shadow-2xl relative
+                                ${project.aspectRatio === 'landscape'
+                                    ? 'w-full aspect-video md:w-auto md:h-[70vh] md:aspect-auto'
+                                    : 'h-[60vh] md:h-[70vh] aspect-[9/16] w-auto'
+                                }`}
                             transition={{ type: "spring", stiffness: 200, damping: 25 }}
                         >
-                            <video
+                            <motion.video
+                                layoutId={`video-playback-${project.id}`}
                                 src={project.videoUrl}
                                 autoPlay
                                 muted
                                 loop
                                 playsInline
-                                className="w-full h-full object-cover"
+                                className="h-full w-full object-cover"
                             />
                         </motion.div>
                     </div>

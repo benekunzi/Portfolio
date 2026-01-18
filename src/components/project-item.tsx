@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useState } from 'react'
 import { useCursor } from '@/context/cursor-context'
+import { useIsTouchDevice } from '@/hooks/use-is-touch-device'
 
 interface ProjectItemProps {
     id: string
@@ -42,10 +43,14 @@ export function ProjectItem({ id, title, year, videoUrl, aspectRatio, onHoverSta
 
     const calculatedWidth = aspectRatio === "portrait" ? "300px" : "600px"
 
+    const isTouchDevice = useIsTouchDevice()
+
     return (
         <div
             className="relative flex items-center justify-between py-3 group"
             onMouseEnter={(e) => {
+                if (isTouchDevice) return
+
                 setIsHovered(true)
                 onHoverStart?.()
 
@@ -116,7 +121,8 @@ export function ProjectItem({ id, title, year, videoUrl, aspectRatio, onHoverSta
                 }}
                 transition={{ type: "spring", stiffness: 500, damping: 35 }}
             >
-                <video
+                <motion.video
+                    layoutId={`video-playback-${id}`}
                     src={videoUrl}
                     autoPlay
                     muted

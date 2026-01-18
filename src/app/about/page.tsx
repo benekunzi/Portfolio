@@ -5,8 +5,9 @@ import Link from 'next/link'
 import StackIcon from 'tech-stack-icons'
 import { useInView } from 'react-intersection-observer'
 import { useEffect, useRef, useState } from 'react'
-import { JOBS, HOVER_IMAGES } from '@/lib/data'
+import { JOBS, HOVER_IMAGES, PROFILE_IMAGE } from '@/lib/data'
 import CursorImages from '@/components/cursor-images'
+import { useMediaQuery } from '@/hooks/use-media-query'
 
 // Reusable Section Component that handles the snapping
 const SnapSection = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
@@ -38,8 +39,8 @@ const SnapSection = ({ children, className = "" }: { children: React.ReactNode, 
 
 import { useCursor } from '@/context/cursor-context'
 
-// Combined Intro Section: Split text transition with scaling image
-const IntroSection = () => {
+// Desktop Intro Section: Split text transition with scaling image (scroll-linked animations)
+const IntroSectionDesktop = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const hoverTargetRef = useRef<HTMLDivElement>(null)
   const { setCursorType, resetCursor } = useCursor()
@@ -74,47 +75,82 @@ const IntroSection = () => {
   const textOpacity = useTransform(scrollYProgress, [0.2, 0.3], [1, 0])
 
   // 2. Image transition [0 -> 0.6]
-  // Appears from center and grows between the words
   const imageOpacity = useTransform(scrollYProgress, [0.05, 0.2], [0, 1])
-  // Scale ends at 2.4 to make it "really big" (approx 84% of viewport if base is 35vh)
   const imageScale = useTransform(scrollYProgress, [0.05, 0.25, 0.6], [0.5, 1.5, 2.4])
   const imageX = useTransform(scrollYProgress, [0, 0.3, 0.6], ["0%", "0%", "-22vw"])
-  // Keep Y centered (0%) so we can align text to it easily
   const imageY = useTransform(scrollYProgress, [0, 0.3, 0.6], ["0%", "0%", "0%"])
 
-  // 3. Info Text (Left side under image) [0.5 -> 0.7]
+  // 3. Info Text [0.5 -> 0.7]
   const infoOpacity = useTransform(scrollYProgress, [0.5, 0.7], [0, 1])
   const infoY = useTransform(scrollYProgress, [0.5, 0.7], [30, 0])
 
-  // 4. Quote (Right side) [0.5 -> 1.0]
+  // 4. Quote [0.5 -> 1.0]
   const quote1Opacity = useTransform(scrollYProgress, [0.6, 0.8], [0, 1])
   const quote1X = useTransform(scrollYProgress, [0.6, 0.8], [20, 0])
-
   const quote2Opacity = useTransform(scrollYProgress, [0.8, 1.0], [0, 1])
   const quote2X = useTransform(scrollYProgress, [0.8, 1.0], [20, 0])
 
   return (
-    <section ref={containerRef} className="h-[200vh] relative">
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+    <section ref={containerRef} className="relative h-[200vh]">
+      <div className="sticky top-0 h-screen w-full overflow-hidden">
 
-        {/* Center: Large Image - starts at absolute center */}
+        {/* Split Text Overlay (Phase 1) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-20">
+          <motion.div
+            className="relative flex"
+            id="about-me-hover"
+            ref={hoverTargetRef}
+            style={{
+              opacity: textOpacity,
+              pointerEvents: textOpacity.get() > 0 ? 'auto' : 'none'
+            }}
+          >
+            {/* "about" text - moves left from center */}
+            <motion.h1
+              style={{
+                x: aboutX,
+                opacity: textOpacity,
+              }}
+              className="text-[8rem] font-bold tracking-tighter"
+              layoutId="about-link"
+            >
+              About
+            </motion.h1>
+
+            <div className="w-8" /> {/* Spacer between the words */}
+
+            {/* "me" text - moves right from center */}
+            <motion.h1
+              style={{
+                x: meX,
+                opacity: textOpacity,
+              }}
+              className="text-[8rem] font-bold tracking-tighter"
+            >
+              me
+            </motion.h1>
+            {/* Cursor-follow images shown when hovering over the split text */}
+            <CursorImages hoverRef={hoverTargetRef} images={HOVER_IMAGES} />
+          </motion.div>
+        </div>
+
+        {/* Center: Large Image */}
         <motion.div
           style={{
             x: imageX,
             y: imageY,
           }}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30"
+          className="absolute z-30 flex justify-center left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         >
           <motion.div
             style={{
               scale: imageScale,
               opacity: imageOpacity,
             }}
-            // Changed base size to height-based for responsiveness
-            className="relative h-[35vh] aspect-[3/4] rounded-[20px] md:rounded-[40px] overflow-hidden shadow-2xl"
+            className="relative h-[35vh] aspect-[3/4] rounded-[40px] overflow-hidden shadow-2xl"
           >
             <img
-              src="https://api.dicebear.com/7.x/identicon/svg?seed=Code"
+              src={PROFILE_IMAGE}
               alt="Profile"
               className="w-full h-full object-cover"
             />
@@ -122,8 +158,7 @@ const IntroSection = () => {
         </motion.div>
 
         {/* Right Side: Biographical Content */}
-        {/* h-[84vh] matches the target height of the image (35vh * 2.4 = 84vh) */}
-        <div className="absolute right-[5vw] top-1/2 -translate-y-1/2 h-[84vh] w-[45vw] flex flex-col justify-start space-y-10 pointer-events-none">
+        <div className="absolute pointer-events-none flex flex-col justify-start space-y-6 right-[5vw] top-1/2 -translate-y-1/2 h-[92vh] w-[45vw]">
           <div className="pointer-events-auto">
             <motion.div
               style={{
@@ -133,7 +168,7 @@ const IntroSection = () => {
               onMouseEnter={() => setCursorType('text')}
               onMouseLeave={resetCursor}
             >
-              <h2 className="text-[48px] md:text-[80px] font-bold leading-[1.1] tracking-tight mb-8">
+              <h2 className="text-[48px] lg:text-[80px] font-bold leading-[1.1] tracking-tight mb-8">
                 I am Benedict
               </h2>
             </motion.div>
@@ -143,7 +178,7 @@ const IntroSection = () => {
                 opacity: infoOpacity,
                 y: infoY,
               }}
-              className="space-y-4 mb-12"
+              className="space-y-4 mb-6"
               onMouseEnter={() => setCursorType('text')}
               onMouseLeave={resetCursor}
             >
@@ -188,46 +223,133 @@ const IntroSection = () => {
           </div>
         </div>
 
-        {/* Split Text Overlay (Phase 1) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-          <motion.div
-            className="relative flex z-10"
-            id="about-me-hover"
-            ref={hoverTargetRef}
-            style={{ opacity: textOpacity, pointerEvents: textOpacity.get() > 0 ? 'auto' : 'none' }}
-          >
-            {/* "about" text - moves left from center */}
-            <motion.h1
-              style={{
-                x: aboutX,
-                opacity: textOpacity,
-              }}
-              className="text-[4rem] md:text-[8rem] font-bold tracking-tighter"
-              layoutId="about-link"
-            >
-              About
-            </motion.h1>
-
-            <div className="md:w-8" /> {/* Spacer between the words */}
-
-            {/* "me" text - moves right from center */}
-            <motion.h1
-              style={{
-                x: meX,
-                opacity: textOpacity,
-              }}
-              className="text-[4rem] md:text-[8rem] font-bold tracking-tighter"
-            >
-              me
-            </motion.h1>
-            {/* Cursor-follow images shown when hovering over the split text */}
-            <CursorImages hoverRef={hoverTargetRef} images={HOVER_IMAGES} />
-          </motion.div>
-        </div>
-
       </div>
     </section>
   )
+}
+
+// Mobile Intro Section: Natural document flow with useInView fade animations
+const IntroSectionMobile = () => {
+  // Calculate age in real-time
+  const calculateAge = () => {
+    const birthDate = new Date('1999-07-29')
+    const today = new Date()
+    const diffMs = today.getTime() - birthDate.getTime()
+    const ageYears = diffMs / (365.25 * 24 * 60 * 60 * 1000)
+    return ageYears.toFixed(9)
+  }
+
+  const [age, setAge] = useState(calculateAge())
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAge(calculateAge())
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
+
+  // useInView for fade-in triggers
+  const { scrollY } = useScroll()
+  const opacity = useTransform(scrollY, [0, 500], [1, 0])
+  const scale = useTransform(scrollY, [0, 500], [1, 1.5]) // Scales up as it fades out
+
+  const { ref: imageRef, inView: imageInView } = useInView({ threshold: 0.3, triggerOnce: true })
+  const { ref: infoRef, inView: infoInView } = useInView({ threshold: 0.2, triggerOnce: true })
+  const { ref: quote1Ref, inView: quote1InView } = useInView({ threshold: 0.2, triggerOnce: true })
+  const { ref: quote2Ref, inView: quote2InView } = useInView({ threshold: 0.2, triggerOnce: true })
+
+  return (
+    <section className="min-h-screen w-full">
+      {/* About me title - Fixed Background */}
+      <div className="fixed inset-0 h-[100dvh] flex items-center justify-center z-0 pointer-events-none">
+        <motion.h1
+          initial={{ opacity: 1, scale: 1 }}
+          style={{ opacity, scale }}
+          className="text-[4rem] font-bold tracking-tighter text-center text-black"
+        >
+          About me
+        </motion.h1>
+      </div>
+
+      {/* Scrollable Content Wrapper */}
+      <div className="relative z-10">
+        {/* Spacer to push content below the fixed title */}
+        <div className="h-[100dvh] w-full" />
+
+        {/* Image - fades in when scrolled to */}
+        <motion.div
+          ref={imageRef}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: imageInView ? 1 : 0, scale: imageInView ? 1 : 0.8 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex justify-center mb-12 px-6"
+        >
+          <div className="relative h-[40vh] aspect-[3/4] rounded-[20px] overflow-hidden shadow-2xl bg-white">
+            <img
+              src="https://api.dicebear.com/7.x/identicon/svg?seed=Code"
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </motion.div>
+
+        {/* Biographical content - flows naturally, fades in progressively */}
+        <div className="max-w-md mx-auto space-y-6 bg-[#FFFCF5]/80 backdrop-blur-sm p-4 rounded-2xl">
+          <motion.div
+            ref={infoRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: infoInView ? 1 : 0, y: infoInView ? 0 : 20 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-[32px] font-bold leading-[1.1] tracking-tight mb-2">
+              I am Benedict
+            </h2>
+            <p className="text-lg font-bold text-black/90 tracking-wide">Software Engineer</p>
+            <div className="flex flex-col mt-1">
+              <p className="text-sm text-black/60 font-medium tabular-nums tracking-wide">{age} years old</p>
+              <p className="text-sm text-black/60 font-medium tracking-wide">Based in Leipzig, Germany</p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            ref={quote1Ref}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: quote1InView ? 1 : 0, y: quote1InView ? 0 : 20 }}
+            transition={{ duration: 0.5 }}
+          >
+            <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
+              I grew up in a small town in Germany, where I developed an early fascination with technology and design. This curiosity led me to study Computer Science, where I discovered my passion for creating seamless user experiences.
+            </p>
+          </motion.div>
+
+          <motion.div
+            ref={quote2Ref}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: quote2InView ? 1 : 0, y: quote2InView ? 0 : 20 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4"
+          >
+            <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
+              My journey into app development began during university, building my first mobile application. I was captivated by the challenge of combining beautiful interfaces with robust functionality.
+            </p>
+            <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
+              I believe in building software that not only solves problems but delights users. Clean code, thoughtful design, and attention to detail are at the core of everything I create.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Wrapper component that renders Desktop or Mobile version based on screen size
+const IntroSection = () => {
+  const isMobile = useMediaQuery("(max-width: 768px)")
+
+  // Return null during SSR/hydration to prevent mismatch
+  if (isMobile === undefined) return null
+
+  return isMobile ? <IntroSectionMobile /> : <IntroSectionDesktop />
 }
 
 const TechStackSection = () => {
@@ -267,6 +389,8 @@ const TechStackSection = () => {
   // 2. Icons fly-in animation
   const iconRevealProgress = useTransform(scrollYProgress, [0.6, 0.9], [0, 1])
 
+  const isMobile = useMediaQuery("(max-width: 768px)")
+
   return (
     <section ref={containerRef} className="h-[200vh] relative">
       <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
@@ -276,7 +400,7 @@ const TechStackSection = () => {
             scale: titleScale,
             opacity: titleOpacity
           }}
-          className="text-6xl md:text-8xl font-bold uppercase tracking-widest z-10 text-black/10"
+          className="text-4xl md:text-6xl lg:text-8xl font-bold uppercase tracking-widest z-10 text-black/10 text-center px-4"
         >
           Techstack
         </motion.h2>
@@ -289,7 +413,7 @@ const TechStackSection = () => {
           {TECHSTACK.map((tech, index) => {
             // Circular arrangement around the smaller title
             const angle = (index / TECHSTACK.length) * Math.PI * 2;
-            const radius = 280; // Reduced radius (was 350)
+            const radius = isMobile ? 140 : 280; // Reduced radius for mobile
 
             // Destination position
             const destX = Math.cos(angle) * (radius * (index % 2 === 0 ? 0.85 : 1.15));
@@ -328,7 +452,7 @@ const TechStackSection = () => {
                     setDimensions(undefined)
                   }}
                 >
-                  <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center p-3 md:p-4 bg-white/40 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 transition-all hover:scale-110 hover:bg-white/60">
+                  <div className="w-10 h-10 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center p-2 md:p-3 lg:p-4 bg-white/40 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg border border-white/20 transition-all hover:scale-110 hover:bg-white/60">
                     <StackIcon name={tech.name} />
                   </div>
                   <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
@@ -348,10 +472,7 @@ const TechStackSection = () => {
 }
 
 export default function About() {
-  const variants: Variants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
-  }
+
 
   return (
     <main className="relative bg-[#FFFCF5]">

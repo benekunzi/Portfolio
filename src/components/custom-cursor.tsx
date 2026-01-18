@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useSpring, useMotionTemplate } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 import { useCursor } from '@/context/cursor-context'
+import { useIsTouchDevice } from '@/hooks/use-is-touch-device'
 
 export default function CustomCursor() {
     const { cursorState } = useCursor()
@@ -73,6 +74,10 @@ export default function CustomCursor() {
             mixBlendMode: "normal" as const
         }
     }
+
+    const isTouchDevice = useIsTouchDevice()
+
+    if (isTouchDevice) return null
 
     return (
         <motion.div

@@ -12,8 +12,8 @@ export default function CustomCursor() {
     const mouseX = useMotionValue(-100)
     const mouseY = useMotionValue(-100)
 
-    // Spring physics for smooth movement
-    const springConfig = { damping: 20, stiffness: 300, mass: 0.5 }
+    // Spring physics for "realtime" but smooth movement
+    const springConfig = { damping: 30, stiffness: 1000, mass: 0.1 }
     const smoothX = useSpring(mouseX, springConfig)
     const smoothY = useSpring(mouseY, springConfig)
 
@@ -23,7 +23,7 @@ export default function CustomCursor() {
             mouseY.set(e.clientY)
         }
 
-        window.addEventListener('mousemove', moveCursor)
+        window.addEventListener('mousemove', moveCursor, { passive: true })
         return () => window.removeEventListener('mousemove', moveCursor)
     }, [mouseX, mouseY])
 
@@ -33,8 +33,6 @@ export default function CustomCursor() {
             height: 16,
             width: 16,
             backgroundColor: "#000000",
-            x: -8,
-            y: -8,
             mixBlendMode: "normal" as const
         },
         button: {
@@ -42,8 +40,6 @@ export default function CustomCursor() {
             width: cursorState.dimensions?.width || 150,
             borderRadius: cursorState.dimensions?.radius || "12px",
             backgroundColor: "rgba(0,0,0,0.0)", // Transparent for Project Items
-            x: -(cursorState.dimensions?.width || 150) / 2,
-            y: -(cursorState.dimensions?.height || 50) / 2,
             mixBlendMode: "normal" as const
         },
         link: {
@@ -51,8 +47,6 @@ export default function CustomCursor() {
             width: cursorState.dimensions?.width || 150,
             borderRadius: cursorState.dimensions?.radius || "12px",
             backgroundColor: "rgba(0,0,0,0.1)", // Slight overlay for Links
-            x: -(cursorState.dimensions?.width || 150) / 2,
-            y: -(cursorState.dimensions?.height || 50) / 2,
             mixBlendMode: "normal" as const
         },
         text: {
@@ -60,8 +54,6 @@ export default function CustomCursor() {
             width: 2,
             backgroundColor: "#000000",
             borderRadius: 0,
-            x: -1,
-            y: -12,
             mixBlendMode: "normal" as const
         },
         icon: {
@@ -69,8 +61,6 @@ export default function CustomCursor() {
             width: 80,
             backgroundColor: "transparent",
             borderRadius: cursorState.dimensions?.radius || "12px",
-            x: -40,
-            y: -40,
             mixBlendMode: "normal" as const
         }
     }
@@ -81,14 +71,14 @@ export default function CustomCursor() {
 
     return (
         <motion.div
-            className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999]"
+            className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2"
             style={{
-                left: smoothX,
-                top: smoothY,
+                x: smoothX,
+                y: smoothY,
             }}
             variants={variants}
             animate={cursorState.type}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.1 }}
         />
     )
 }

@@ -62,7 +62,6 @@ export function ProjectItem({ id, title, year, videoUrl, aspectRatio, onHoverSta
                     height: rect.height + 8, // inset-y-1 = 4px * 2 = 8px
                     radius: "20px"
                 })
-                setCursorType('button')
             }}
             onMouseLeave={() => {
                 setIsHovered(false)

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, Variants, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, Variants, useScroll, useTransform, useSpring, AnimatePresence, useMotionValueEvent } from 'framer-motion'
 import Link from 'next/link'
 import StackIcon from 'tech-stack-icons'
 import { useInView } from 'react-intersection-observer'
@@ -45,6 +45,9 @@ const IntroSectionDesktop = () => {
   const hoverTargetRef = useRef<HTMLDivElement>(null)
   const { setCursorType, resetCursor } = useCursor()
 
+  // Image Cycling Logic
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
   // Calculate age in real-time
   const calculateAge = () => {
     const birthDate = new Date('1999-07-29')
@@ -72,13 +75,17 @@ const IntroSectionDesktop = () => {
   // 1. "about" moves left, "me" moves right [0 -> 0.3]
   const aboutX = useTransform(scrollYProgress, [0, 0.3], [0, -400])
   const meX = useTransform(scrollYProgress, [0, 0.3], [0, 400])
-  const textOpacity = useTransform(scrollYProgress, [0.2, 0.3], [1, 0])
+  const textOpacity = useTransform(scrollYProgress, [0.1, 0.3], [1, 0])
 
   // 2. Image transition [0 -> 0.6]
-  const imageOpacity = useTransform(scrollYProgress, [0.05, 0.2], [0, 1])
-  const imageScale = useTransform(scrollYProgress, [0.05, 0.25, 0.6], [0.5, 1.5, 2.4])
-  const imageX = useTransform(scrollYProgress, [0, 0.3, 0.6], ["0%", "0%", "-22vw"])
-  const imageY = useTransform(scrollYProgress, [0, 0.3, 0.6], ["0%", "0%", "0%"])
+  // Start visible (opacity 1) at small scale, then grow and move to final position
+  const imageOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 1]) // Keep visible throughout
+  // Scale and position logic
+  // Base size is now smaller (4rem), scale up to larger final size
+  const imageScale = useTransform(scrollYProgress, [0, 0.3, 0.6], [0.9, 4.5, 4.5])
+  // Move from center to left side of biographical content
+  const imageX = useTransform(scrollYProgress, [0.3, 0.6], ["0%", "-30vw"])
+  const imageY = useTransform(scrollYProgress, [0.3, 0.6], ["0%", "-5vh"])
 
   // 3. Info Text [0.5 -> 0.7]
   const infoOpacity = useTransform(scrollYProgress, [0.5, 0.7], [0, 1])
@@ -89,15 +96,39 @@ const IntroSectionDesktop = () => {
   const quote1X = useTransform(scrollYProgress, [0.6, 0.8], [20, 0])
   const quote2Opacity = useTransform(scrollYProgress, [0.8, 1.0], [0, 1])
   const quote2X = useTransform(scrollYProgress, [0.8, 1.0], [20, 0])
+  const quote3Opacity = useTransform(scrollYProgress, [0.9, 1.0], [0, 1])
+  const quote3X = useTransform(scrollYProgress, [0.9, 1.0], [20, 0])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % HOVER_IMAGES.length)
+    }, 500)
+
+    const unsubscribe = scrollYProgress.on('change', (latest) => {
+      if (latest > 0.01 && interval) {
+        clearInterval(interval)
+        interval = null
+      } else if (latest <= 0.01 && !interval) {
+        interval = setInterval(() => {
+          setActiveImageIndex((prev) => (prev + 1) % HOVER_IMAGES.length)
+        }, 500)
+      }
+    })
+
+    return () => {
+      if (interval) clearInterval(interval)
+      unsubscribe()
+    }
+  }, [scrollYProgress])
 
   return (
     <section ref={containerRef} className="relative h-[200vh]">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
 
         {/* Split Text Overlay (Phase 1) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-20">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-20 mr-[9rem]">
           <motion.div
-            className="relative flex"
+            className="relative flex items-center justify-center gap-8"
             id="about-me-hover"
             ref={hoverTargetRef}
             style={{
@@ -112,12 +143,12 @@ const IntroSectionDesktop = () => {
                 opacity: textOpacity,
               }}
               className="text-[8rem] font-bold tracking-tighter"
-              layoutId="about-link"
             >
               About
             </motion.h1>
 
-            <div className="w-8" /> {/* Spacer between the words */}
+            {/* Spacer to maintain layout where image was */}
+            <div className="w-[4rem] aspect-[3/4]" />
 
             {/* "me" text - moves right from center */}
             <motion.h1
@@ -129,36 +160,35 @@ const IntroSectionDesktop = () => {
             >
               me
             </motion.h1>
-            {/* Cursor-follow images shown when hovering over the split text */}
-            <CursorImages hoverRef={hoverTargetRef} images={HOVER_IMAGES} />
           </motion.div>
         </div>
 
-        {/* Center: Large Image */}
+        {/* Cycling Image - Independent from text container */}
         <motion.div
           style={{
+            scale: imageScale,
+            opacity: imageOpacity,
             x: imageX,
             y: imageY,
           }}
-          className="absolute z-30 flex justify-center left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[4rem] aspect-[3/4] rounded-[20px] overflow-hidden shadow-2xl origin-center z-30"
         >
-          <motion.div
-            style={{
-              scale: imageScale,
-              opacity: imageOpacity,
-            }}
-            className="relative h-[35vh] aspect-[3/4] rounded-[40px] overflow-hidden shadow-2xl"
-          >
-            <img
-              src={PROFILE_IMAGE}
+          <AnimatePresence mode="popLayout">
+            <motion.img
+              key={activeImageIndex}
+              src={HOVER_IMAGES[activeImageIndex]}
               alt="Profile"
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             />
-          </motion.div>
+          </AnimatePresence>
         </motion.div>
 
         {/* Right Side: Biographical Content */}
-        <div className="absolute pointer-events-none flex flex-col justify-start space-y-6 right-[5vw] top-1/2 -translate-y-1/2 h-[92vh] w-[45vw]">
+        <div className="absolute pointer-events-none flex flex-col justify-start space-y-6 right-[5vw] top-1/2 -translate-y-1/2 h-[96vh] w-[45vw]">
           <div className="pointer-events-auto">
             <motion.div
               style={{
@@ -215,8 +245,15 @@ const IntroSectionDesktop = () => {
                 <p className="text-[22px] leading-[1.6] font-[system-ui] text-black/80 tracking-wide font-light">
                   My journey into app development began during university, building my first mobile application. I was captivated by the challenge of combining beautiful interfaces with robust functionality.
                 </p>
+              </motion.div>
+              <motion.div
+                style={{
+                  opacity: quote3Opacity,
+                  x: quote3X,
+                }}
+              >
                 <p className="text-[22px] leading-[1.6] font-[system-ui] text-black/80 tracking-wide font-light">
-                  I believe in building software that not only solves problems but delights users. Clean code, thoughtful design, and attention to detail are at the core of everything I create.
+                  Today, I continue to evolve as a developer, always seeking new challenges and opportunities to push the boundaries of what's possible in software engineering. My focus is on creating products that make a real impact.
                 </p>
               </motion.div>
             </motion.div>
@@ -230,6 +267,9 @@ const IntroSectionDesktop = () => {
 
 // Mobile Intro Section: Natural document flow with useInView fade animations
 const IntroSectionMobile = () => {
+  // Image Cycling Logic
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
   // Calculate age in real-time
   const calculateAge = () => {
     const birthDate = new Date('1999-07-29')
@@ -248,6 +288,15 @@ const IntroSectionMobile = () => {
     return () => clearInterval(interval)
   }, [])
 
+  // Image cycling interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % HOVER_IMAGES.length)
+    }, 500)
+
+    return () => clearInterval(interval)
+  }, [])
+
   // useInView for fade-in triggers
   const { scrollY } = useScroll()
   const opacity = useTransform(scrollY, [0, 500], [1, 0])
@@ -257,6 +306,7 @@ const IntroSectionMobile = () => {
   const { ref: infoRef, inView: infoInView } = useInView({ threshold: 0.2, triggerOnce: true })
   const { ref: quote1Ref, inView: quote1InView } = useInView({ threshold: 0.2, triggerOnce: true })
   const { ref: quote2Ref, inView: quote2InView } = useInView({ threshold: 0.2, triggerOnce: true })
+  const { ref: quote3Ref, inView: quote3InView } = useInView({ threshold: 0.2, triggerOnce: true })
 
   return (
     <section className="min-h-screen w-full">
@@ -285,11 +335,18 @@ const IntroSectionMobile = () => {
           className="flex justify-center mb-12 px-6"
         >
           <div className="relative h-[40vh] aspect-[3/4] rounded-[20px] overflow-hidden shadow-2xl bg-white">
-            <img
-              src="https://api.dicebear.com/7.x/identicon/svg?seed=Code"
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
+            <AnimatePresence mode="popLayout">
+              <motion.img
+                key={activeImageIndex}
+                src={HOVER_IMAGES[activeImageIndex]}
+                alt="Profile"
+                className="absolute inset-0 w-full h-full object-cover"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              />
+            </AnimatePresence>
           </div>
         </motion.div>
 
@@ -332,6 +389,13 @@ const IntroSectionMobile = () => {
             <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
               My journey into app development began during university, building my first mobile application. I was captivated by the challenge of combining beautiful interfaces with robust functionality.
             </p>
+          </motion.div>
+          <motion.div
+            ref={quote3Ref}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: quote3InView ? 1 : 0, y: quote3InView ? 0 : 20 }}
+            transition={{ duration: 0.5 }}
+          >
             <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
               I believe in building software that not only solves problems but delights users. Clean code, thoughtful design, and attention to detail are at the core of everything I create.
             </p>
@@ -549,7 +613,7 @@ export default function About() {
 
       {/* Footer / End Spacer */}
       <div className="h-[20vh] flex items-center justify-center text-black/30 pb-12">
-        <p>Thanks for scrolling.</p>
+        <p>Thanks for scrolling :)</p>
       </div>
 
     </main>

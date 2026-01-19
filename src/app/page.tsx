@@ -47,7 +47,6 @@ export default function Home() {
           </div>
 
           {/* Bottom: Links */}
-          {/* Bottom: Links */}
           <div className="flex gap-6 pb-24 pointer-events-auto pt-[2vh] items-center">
             <Link href="/about" passHref legacyBehavior>
               <motion.a
@@ -103,7 +102,7 @@ export default function Home() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 1, y: 40 }}
                     transition={{ duration: 0.3 }}
-                    href="mailto:benedict.kunzmann@gmail.com"
+                    href="mailto:benedict.kunzmann@icloud.com"
                     className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity whitespace-nowrap block cursor-none"
                   >
                     E-Mail
@@ -118,10 +117,10 @@ export default function Home() {
                     className="flex items-center gap-2"
                   >
                     <a
-                      href="mailto:benedict.kunzmann@gmail.com"
+                      href="mailto:benedict.kunzmann@icloud.com"
                       className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity whitespace-nowrap cursor-none"
                     >
-                      benedict.kunzmann@gmail.com
+                      benedict.kunzmann@icloud.com
                     </a>
                   </motion.div>
                 )}

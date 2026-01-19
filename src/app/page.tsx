@@ -6,6 +6,7 @@ import { Project, PROJECTS } from "@/lib/data";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCursor } from "@/context/cursor-context";
+import Link from "next/link";
 
 export default function Home() {
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -48,22 +49,22 @@ export default function Home() {
           {/* Bottom: Links */}
           {/* Bottom: Links */}
           <div className="flex gap-6 pb-24 pointer-events-auto pt-[2vh] items-center">
-            <motion.a
-              href="/about"
-              className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity p-2 -m-2 rounded-lg cursor-none"
-              layoutId="about-link"
-              onMouseEnter={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect()
-                setDimensions({ width: rect.width, height: rect.height, radius: "8px" })
-                setCursorType('link')
-              }}
-              onMouseLeave={() => {
-                resetCursor()
-                setDimensions(undefined)
-              }}
-            >
-              About
-            </motion.a>
+            <Link href="/about" passHref legacyBehavior>
+              <motion.a
+                className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity p-2 -m-2 rounded-lg cursor-none"
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  setDimensions({ width: rect.width, height: rect.height, radius: "8px" })
+                  setCursorType('link')
+                }}
+                onMouseLeave={() => {
+                  resetCursor()
+                  setDimensions(undefined)
+                }}
+              >
+                About
+              </motion.a>
+            </Link>
             <a
               href="https://github.com/benekunzi"
               className="text-[18px] leading-[22px] text-black/70 hover:opacity-100 transition-opacity p-2 -m-2 rounded-lg cursor-none"

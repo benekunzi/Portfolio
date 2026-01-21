@@ -2,7 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useState } from 'react'
-import { useCursor } from '@/context/cursor-context'
+// import { useCursor } from '@/context/cursor-context'
 import { useIsTouchDevice } from '@/hooks/use-is-touch-device'
 
 interface ProjectItemProps {
@@ -18,7 +18,7 @@ interface ProjectItemProps {
 
 export function ProjectItem({ id, title, year, videoUrl, aspectRatio, onHoverStart, onHoverEnd, onClick }: ProjectItemProps) {
     const [isHovered, setIsHovered] = useState(false)
-    const { setCursorType, setDimensions, resetCursor } = useCursor()
+    // const { setCursorType, setDimensions, resetCursor } = useCursor()
 
     // Mouse position tracking for video parallax
     const mouseX = useMotionValue(0)
@@ -57,11 +57,11 @@ export function ProjectItem({ id, title, year, videoUrl, aspectRatio, onHoverSta
                 const rect = e.currentTarget.getBoundingClientRect()
                 // Adjust dimensions to match the hover box (-inset-y-1 -inset-x-4)
                 // The main div is the reference, so we add the padding diffs
-                setDimensions({
-                    width: rect.width + 32, // inset-x-4 = 16px * 2 = 32px
-                    height: rect.height + 8, // inset-y-1 = 4px * 2 = 8px
-                    radius: "20px"
-                })
+                // setDimensions({
+                //     width: rect.width + 32, // inset-x-4 = 16px * 2 = 32px
+                //     height: rect.height + 8, // inset-y-1 = 4px * 2 = 8px
+                //     radius: "20px"
+                // })
             }}
             onMouseLeave={() => {
                 setIsHovered(false)
@@ -70,8 +70,8 @@ export function ProjectItem({ id, title, year, videoUrl, aspectRatio, onHoverSta
                 mouseX.set(0)
                 mouseY.set(0)
 
-                resetCursor()
-                setDimensions(undefined)
+                // resetCursor()
+                // setDimensions(undefined)
             }}
             onMouseMove={handleMouseMove}
             onClick={onClick}

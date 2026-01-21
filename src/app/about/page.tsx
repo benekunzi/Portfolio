@@ -1,13 +1,14 @@
 'use client'
 
-import { motion, Variants, useScroll, useTransform, useSpring, AnimatePresence, useMotionValueEvent } from 'framer-motion'
+import { motion, Variants, useScroll, useTransform, useSpring, AnimatePresence, useMotionValueEvent, LazyMotion, domAnimation } from 'framer-motion'
 import Link from 'next/link'
 import StackIcon from 'tech-stack-icons'
 import { useInView } from 'react-intersection-observer'
 import { useEffect, useRef, useState } from 'react'
 import { JOBS, HOVER_IMAGES, PROFILE_IMAGE } from '@/lib/data'
-import CursorImages from '@/components/cursor-images'
 import { useMediaQuery } from '@/hooks/use-media-query'
+import { AgeCounter } from '@/components/age-counter'
+import { useCursor } from '@/context/cursor-context'
 
 // Reusable Section Component that handles the snapping
 const SnapSection = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
@@ -37,35 +38,18 @@ const SnapSection = ({ children, className = "" }: { children: React.ReactNode, 
   )
 }
 
-import { useCursor } from '@/context/cursor-context'
+// import { useCursor } from '@/context/cursor-context'
 
 // Desktop Intro Section: Split text transition with scaling image (scroll-linked animations)
 const IntroSectionDesktop = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const hoverTargetRef = useRef<HTMLDivElement>(null)
-  const { setCursorType, resetCursor } = useCursor()
+  // const { setCursorType, resetCursor } = useCursor()
 
   // Image Cycling Logic
   const [activeImageIndex, setActiveImageIndex] = useState(0)
 
-  // Calculate age in real-time
-  const calculateAge = () => {
-    const birthDate = new Date('1999-07-29')
-    const today = new Date()
-    const diffMs = today.getTime() - birthDate.getTime()
-    const ageYears = diffMs / (365.25 * 24 * 60 * 60 * 1000)
-    return ageYears.toFixed(9) // 9 decimal places for smooth updates
-  }
-
-  const [age, setAge] = useState(calculateAge())
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAge(calculateAge())
-    }, 100) // Update every 100ms for smooth animation
-
-    return () => clearInterval(interval)
-  }, [])
+  // Age calculation moved to AgeCounter component
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -126,7 +110,7 @@ const IntroSectionDesktop = () => {
       <div className="sticky top-0 h-screen w-full overflow-hidden">
 
         {/* Split Text Overlay (Phase 1) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-20 mr-[9rem]">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-20 mr-[10rem]">
           <motion.div
             className="relative flex items-center justify-center gap-8"
             id="about-me-hover"
@@ -158,7 +142,7 @@ const IntroSectionDesktop = () => {
               }}
               className="text-[8rem] font-bold tracking-tighter"
             >
-              me
+              Me
             </motion.h1>
           </motion.div>
         </div>
@@ -171,20 +155,19 @@ const IntroSectionDesktop = () => {
             x: imageX,
             y: imageY,
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[4rem] aspect-[3/4] rounded-[20px] overflow-hidden shadow-2xl origin-center z-30"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[4rem] aspect-[3/4] rounded-[4px] overflow-hidden shadow-2xl origin-center z-30 mt-2"
         >
-          <AnimatePresence mode="popLayout">
+          {HOVER_IMAGES.map((img, index) => (
             <motion.img
-              key={activeImageIndex}
-              src={HOVER_IMAGES[activeImageIndex]}
+              key={index}
+              src={img}
               alt="Profile"
               className="absolute inset-0 w-full h-full object-cover"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              animate={{ opacity: index === activeImageIndex ? 1 : 0 }}
               transition={{ duration: 0.5 }}
             />
-          </AnimatePresence>
+          ))}
         </motion.div>
 
         {/* Right Side: Biographical Content */}
@@ -195,8 +178,6 @@ const IntroSectionDesktop = () => {
                 opacity: infoOpacity,
                 y: infoY,
               }}
-              onMouseEnter={() => setCursorType('text')}
-              onMouseLeave={resetCursor}
             >
               <h2 className="text-[48px] lg:text-[80px] font-bold leading-[1.1] tracking-tight mb-8">
                 I am Benedict
@@ -209,20 +190,16 @@ const IntroSectionDesktop = () => {
                 y: infoY,
               }}
               className="space-y-4 mb-6"
-              onMouseEnter={() => setCursorType('text')}
-              onMouseLeave={resetCursor}
             >
               <p className="text-3xl font-bold text-black/90 tracking-wide">Software Engineer</p>
               <div className="flex flex-col gap-1">
-                <p className="text-xl text-black/60 font-medium tabular-nums tracking-wide">{age} years old</p>
+                <p className="text-xl text-black/60 font-medium tabular-nums tracking-wide"><AgeCounter /> years old</p>
                 <p className="text-xl text-black/60 font-medium tracking-wide">Based in Leipzig, Germany</p>
               </div>
             </motion.div>
 
             <motion.div
               className="space-y-8 max-w-xl"
-              onMouseEnter={() => setCursorType('text')}
-              onMouseLeave={resetCursor}
             >
               <motion.div
                 style={{
@@ -270,32 +247,24 @@ const IntroSectionMobile = () => {
   // Image Cycling Logic
   const [activeImageIndex, setActiveImageIndex] = useState(0)
 
-  // Calculate age in real-time
-  const calculateAge = () => {
-    const birthDate = new Date('1999-07-29')
-    const today = new Date()
-    const diffMs = today.getTime() - birthDate.getTime()
-    const ageYears = diffMs / (365.25 * 24 * 60 * 60 * 1000)
-    return ageYears.toFixed(9)
-  }
+  // Age calculation moved to AgeCounter component
 
-  const [age, setAge] = useState(calculateAge())
+  // Track if image section is visible to pause cycling when off-screen
+  const { ref: imageCycleRef, inView: imageCycleInView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false,
+  })
 
+  // Image cycling interval - only runs when visible
   useEffect(() => {
-    const interval = setInterval(() => {
-      setAge(calculateAge())
-    }, 100)
-    return () => clearInterval(interval)
-  }, [])
+    if (!imageCycleInView) return
 
-  // Image cycling interval
-  useEffect(() => {
     const interval = setInterval(() => {
       setActiveImageIndex((prev) => (prev + 1) % HOVER_IMAGES.length)
     }, 500)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [imageCycleInView])
 
   // useInView for fade-in triggers
   const { scrollY } = useScroll()
@@ -328,25 +297,28 @@ const IntroSectionMobile = () => {
 
         {/* Image - fades in when scrolled to */}
         <motion.div
-          ref={imageRef}
+          ref={(node) => {
+            // Combine refs for both imageRef (fade-in) and imageCycleRef (cycling control)
+            imageRef(node)
+            imageCycleRef(node)
+          }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: imageInView ? 1 : 0, scale: imageInView ? 1 : 0.8 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="flex justify-center mb-12 px-6"
         >
           <div className="relative h-[40vh] aspect-[3/4] rounded-[20px] overflow-hidden shadow-2xl bg-white">
-            <AnimatePresence mode="popLayout">
+            {HOVER_IMAGES.map((img, index) => (
               <motion.img
-                key={activeImageIndex}
-                src={HOVER_IMAGES[activeImageIndex]}
+                key={index}
+                src={img}
                 alt="Profile"
                 className="absolute inset-0 w-full h-full object-cover"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                animate={{ opacity: index === activeImageIndex ? 1 : 0 }}
                 transition={{ duration: 0.5 }}
               />
-            </AnimatePresence>
+            ))}
           </div>
         </motion.div>
 
@@ -363,7 +335,7 @@ const IntroSectionMobile = () => {
             </h2>
             <p className="text-lg font-bold text-black/90 tracking-wide">Software Engineer</p>
             <div className="flex flex-col mt-1">
-              <p className="text-sm text-black/60 font-medium tabular-nums tracking-wide">{age} years old</p>
+              <p className="text-sm text-black/60 font-medium tabular-nums tracking-wide"><AgeCounter /> years old</p>
               <p className="text-sm text-black/60 font-medium tracking-wide">Based in Leipzig, Germany</p>
             </div>
           </motion.div>
@@ -418,31 +390,30 @@ const IntroSection = () => {
 
 const TechStackSection = () => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { setCursorType, resetCursor, setDimensions } = useCursor()
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end end"]
   })
 
+  // Track if section is in view to optimize animation performance
+  const { ref: viewRef, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false,
+  })
+
   const TECHSTACK = [
-    { name: "typescript", label: "TypeScript" },
-    { name: "python", label: "Python" },
-    { name: "swift", label: "Swift" },
-    { name: "kotlin", label: "Kotlin" },
-    { name: "js", label: "JavaScript" },
-    { name: "rust", label: "Rust" },
-    { name: "go", label: "Go" },
-    { name: "reactjs", label: "React" },
-    { name: "nextjs", label: "Next.js" },
-    { name: "tailwindcss", label: "Tailwind" },
-    { name: "nodejs", label: "Node.js" },
-    { name: "postgresql", label: "PostgreSQL" },
-    { name: "aws", label: "AWS" },
-    { name: "docker", label: "Docker" },
-    { name: "git", label: "Git" },
-    { name: "mongodb", label: "MongoDB" },
-    { name: "fastapi", label: "FastAPI" },
-    { name: "django", label: "Django" }
+    { name: "typescript", label: "TypeScript", type: "icon" },
+    { name: "python", label: "Python", type: "icon" },
+    { name: "swift", label: "Swift", type: "icon" },
+    { name: "js", label: "JavaScript", type: "icon" },
+    { name: "firebase", label: "Firebase", type: "icon" },
+    { name: "react", label: "React", type: "icon" },
+    { name: "nextjs", label: "Next.js", type: "icon" },
+    { name: "tailwindcss", label: "Tailwind", type: "icon" },
+    { name: "postgresql", label: "PostgreSQL", type: "icon" },
+    { name: "supabase", label: "Supabase", type: "icon" },
+    { name: "git", label: "Git", type: "icon" },
+    { name: "pandas", label: "Pandas", type: "asset" },
   ];
 
   // 1. "Techstack" title animation
@@ -456,104 +427,105 @@ const TechStackSection = () => {
   const isMobile = useMediaQuery("(max-width: 768px)")
 
   return (
-    <section ref={containerRef} className="h-[200vh] relative">
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
-        <motion.h2
-          style={{
-            x: titleX,
-            scale: titleScale,
-            opacity: titleOpacity
-          }}
-          className="text-4xl md:text-6xl lg:text-8xl font-bold uppercase tracking-widest z-10 text-black/10 text-center px-4"
-        >
-          Techstack
-        </motion.h2>
+    <LazyMotion features={domAnimation}>
+      <section ref={containerRef} className="h-[200vh] relative">
+        <div ref={viewRef} className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+          <motion.h2
+            style={{
+              x: titleX,
+              scale: titleScale,
+              opacity: titleOpacity
+            }}
+            className="text-4xl md:text-6xl lg:text-8xl font-bold uppercase tracking-widest z-10 text-black/10 text-center px-4"
+          >
+            Techstack
+          </motion.h2>
 
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-        >
-          {TECHSTACK.map((tech, index) => {
-            // Circular arrangement around the smaller title
-            const angle = (index / TECHSTACK.length) * Math.PI * 2;
-            const radius = isMobile ? 140 : 280; // Reduced radius for mobile
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center z-11"
+            animate={inView ? { rotate: 360 } : undefined}
+            transition={inView ? { duration: 100, repeat: Infinity, ease: "linear" } : { duration: 0 }}
+          >
+            {TECHSTACK.map((tech, index) => {
+              // Circular arrangement around the smaller title
+              const angle = (index / TECHSTACK.length) * Math.PI * 2;
+              const radius = isMobile ? 140 : 280; // Reduced radius for mobile
 
-            // Destination position
-            const destX = Math.cos(angle) * (radius * (index % 2 === 0 ? 0.85 : 1.15));
-            const destY = Math.sin(angle) * (radius * (index % 2 === 0 ? 0.85 : 1.15));
+              // Destination position
+              const destX = Math.cos(angle) * (radius * (index % 2 === 0 ? 0.85 : 1.15));
+              const destY = Math.sin(angle) * (radius * (index % 2 === 0 ? 0.85 : 1.15));
 
-            // Random starting positions further out
-            const startX = Math.cos(angle) * 1200;
-            const startY = Math.sin(angle) * 1200;
+              // Random starting positions further out
+              const startX = Math.cos(angle) * 1200;
+              const startY = Math.sin(angle) * 1200;
 
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const x = useTransform(iconRevealProgress, [0, 1], [startX, destX])
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const y = useTransform(iconRevealProgress, [0, 1], [startY, destY])
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const opacity = useTransform(iconRevealProgress, [0, 0.2], [0, 1])
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const scale = useTransform(iconRevealProgress, [0, 1], [0.5, 1])
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const x = useTransform(iconRevealProgress, [0, 1], [startX, destX])
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const y = useTransform(iconRevealProgress, [0, 1], [startY, destY])
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const opacity = useTransform(iconRevealProgress, [0, 0.2], [0, 1])
+              // eslint-disable-next-line react-hooks/rules-of-hooks
+              const scale = useTransform(iconRevealProgress, [0, 1], [0.5, 1])
 
-            return (
-              <motion.div
-                key={tech.name}
-                style={{ x, y, opacity, scale }}
-                className="absolute group"
-              >
+              return (
                 <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-                  onMouseEnter={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    // rounded-2xl is usually 1rem (16px)
-                    setDimensions({ width: rect.width, height: rect.height, radius: "16px" })
-                    setCursorType('button')
-                  }}
-                  onMouseLeave={() => {
-                    resetCursor()
-                    setDimensions(undefined)
-                  }}
+                  key={tech.name}
+                  style={{ x, y, opacity, scale }}
+                  className="absolute group"
                 >
-                  <div className="w-10 h-10 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center p-2 md:p-3 lg:p-4 bg-white/40 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg border border-white/20 transition-all hover:scale-110 hover:bg-white/60">
-                    <StackIcon name={tech.name} />
-                  </div>
-                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                    <span className="text-xs font-bold text-black/60 bg-white/90 px-3 py-1 rounded shadow-md whitespace-nowrap border border-black/5">
-                      {tech.label}
-                    </span>
-                  </div>
+                  <motion.div
+                    animate={inView ? { rotate: -360 } : undefined}
+                    transition={inView ? { duration: 100, repeat: Infinity, ease: "linear" } : { duration: 0 }}
+                  >
+                    {tech.type === "icon" ? (
+                      <div className="w-10 h-10 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center p-2 md:p-3 lg:p-4 bg-white/40 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg border border-white/20 transition-all hover:scale-110 hover:bg-white/60">
+                        <StackIcon name={tech.name} />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center p-2 md:p-3 lg:p-4 bg-white/40 backdrop-blur-md rounded-xl md:rounded-2xl shadow-lg border border-white/20 transition-all hover:scale-110 hover:bg-white/60">
+                        <img src={`./${tech.name}.png`} alt={tech.name} />
+                      </div>
+                    )}
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                      <span className="text-xs font-bold text-black/60 bg-white/90 px-3 py-1 rounded shadow-md whitespace-nowrap border border-black/5">
+                        {tech.label}
+                      </span>
+                    </div>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            )
-          })}
-        </motion.div>
+              )
+            })}
+          </motion.div>
 
-      </div>
-    </section>
+        </div>
+      </section>
+    </LazyMotion>
   )
 }
 
 export default function About() {
 
+  const { setCursorType, setDimensions, resetCursor } = useCursor();
+
+  useEffect(() => {
+    setCursorType('default')
+    setDimensions(undefined)
+    resetCursor()
+  }, [])
 
   return (
-    <main className="relative bg-[#FFFCF5]">
-      {/* Background set to match theme base */}
-
+    <main className="relative">
+      {/* Background inherits dynamic animation from body */}
       {/* Navigation Back */}
-      <nav className="fixed top-0 left-0 w-full p-12 z-50 flex justify-between items-center pointer-events-none">
-        <Link href="/" className="pointer-events-auto text-xl font-bold hover:opacity-50 transition-opacity">
+      <nav className="fixed top-0 left-0 w-full p-12 z-50 flex justify-between items-center">
+        <Link href="/" className="text-xl font-bold hover:opacity-50 transition-opacity">
           Benedict Kunzmann
         </Link>
-        <div className="pointer-events-auto">
-          <Link href="/" className="text-[18px] text-black/70 hover:opacity-100 transition-opacity">
-            Close
-          </Link>
-        </div>
+        <Link href="/" className="text-[18px] text-black/70 hover:opacity-100 transition-opacity cursor-none">
+          Close
+        </Link>
       </nav>
-
       {/* Layered Intro Section (Title + Quote) */}
       <IntroSection />
 
@@ -619,3 +591,4 @@ export default function About() {
     </main>
   )
 }
+

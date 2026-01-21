@@ -24,8 +24,6 @@ export default function Home() {
         className="w-full h-full relative"
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-
-        {/* Center: Bio */}
         <motion.div
           key="bio"
           className="relative md:absolute left-0 md:left-1/2 top-0 md:-translate-x-1/2 flex flex-col justify-between p-6 md:p-24 z-20 pointer-events-none w-full md:w-[600px]"
@@ -37,7 +35,6 @@ export default function Home() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {/* Top: Title */}
           <div className="pt-[30vh] pointer-events-auto w-full">
             <h1 className="text-[22px] font-bold leading-[1.4] tracking-tight text-black">
               Benedict Kunzmann,
@@ -46,7 +43,6 @@ export default function Home() {
             </h1>
           </div>
 
-          {/* Bottom: Links */}
           <div className="flex gap-6 pb-24 pointer-events-auto pt-[2vh] items-center">
             <Link href="/about" passHref legacyBehavior>
               <motion.a
@@ -129,7 +125,6 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Left side: Project List */}
         <AnimatePresence>
           <motion.div
             key="list"
@@ -156,15 +151,17 @@ export default function Home() {
           </motion.div>
         </AnimatePresence>
 
-        <motion.div>
-          <ProjectDetail
-            project={selectedProject}
-            onClose={() => {
-              setShowDetailPage(false);
-              setSelectedProject(null);
-            }}
-          />
-        </motion.div>
+        <AnimatePresence>
+          {showDetailPage && (
+            <ProjectDetail
+              project={selectedProject}
+              onClose={() => {
+                setShowDetailPage(false);
+                setSelectedProject(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </motion.div>
     </main>
   );

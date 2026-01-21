@@ -13,6 +13,11 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       smoothWheel: true,
     })
 
+    // Store globally so we can control it from other components
+    if (typeof window !== 'undefined') {
+      (window as any).__lenis = lenis
+    }
+
     function raf(time: number) {
       lenis.raf(time)
       requestAnimationFrame(raf)
@@ -22,6 +27,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     return () => {
       lenis.destroy()
+      if (typeof window !== 'undefined') {
+        (window as any).__lenis = null
+      }
     }
   }, [])
 

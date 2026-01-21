@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Project } from '@/lib/data'
+import { useEffect } from 'react'
 
 interface ProjectDetailProps {
     project: Project | null
@@ -9,6 +10,16 @@ interface ProjectDetailProps {
 }
 
 export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
+    // Prevent body scroll when detail view is open
+    useEffect(() => {
+        document.documentElement.style.overflow = 'hidden'
+        document.body.style.overflow = 'hidden'
+
+        return () => {
+            document.documentElement.style.overflow = ''
+            document.body.style.overflow = ''
+        }
+    }, [])
 
     if (!project) {
         return null;
@@ -17,6 +28,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     return (
         <motion.div
             className="fixed inset-0 z-[100] bg-white overflow-auto"
+            data-lenis-prevent
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

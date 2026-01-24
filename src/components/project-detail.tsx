@@ -37,7 +37,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             <div className="min-h-screen p-12 lg:p-24 pt-12">
                 {/* Back Link (Hidden in Header now, but kept as alternative) */}
                 <motion.button
-                    className="mb-8 text-black/70 hover:text-black font-medium"
+                    className="mb-8 text-black/70 hover:text-black font-medium cursor-none"
                     onClick={onClose}
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
@@ -56,21 +56,9 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     {project.title}
                 </motion.h1>
 
-                {/* Content Row: Description | Video */}
                 <div className="flex flex-col-reverse lg:flex-row gap-12 mb-16">
-                    {/* Description (Left) */}
                     <div className="w-full lg:w-1/3 pt-4">
-                        <motion.p
-                            className="text-[18px] leading-[1.6] text-black/80 font-[system-ui]"
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            {project.description}
-                        </motion.p>
-
-                        {/* Technical Stack */}
-                        <div className="mt-12">
+                        <div className="mb-12">
                             <h3 className="text-sm font-bold uppercase tracking-wider text-black/40 mb-4">Tech Stack</h3>
                             <div className="flex flex-wrap gap-2">
                                 {project.techStack.map((tech, i) => (
@@ -86,9 +74,17 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                                 ))}
                             </div>
                         </div>
+
+                        <motion.p
+                            className="text-[18px] leading-[1.6] text-black/80 font-[system-ui]"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            {project.description}
+                        </motion.p>
                     </div>
 
-                    {/* Video (Right) */}
                     <div className="flex-1 flex justify-center items-start">
                         <motion.div
                             layoutId={`video-${project.id}`}
@@ -111,11 +107,13 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                         </motion.div>
                     </div>
                 </div>
-
-                {/* Placeholder for more heavy scroll content */}
-                <div className="h-[50vh] flex items-center justify-center text-black/20">
-                    More content below...
-                </div>
+                {project.gitHubLink && (
+                    <div className="flex justify-center mt-12">
+                        <a href={project.gitHubLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 border border-black rounded-full hover:bg-black hover:text-white transition-colors">
+                            <span>View on GitHub</span>
+                        </a>
+                    </div>
+                )}
             </div>
         </motion.div>
     )

@@ -244,135 +244,151 @@ const IntroSectionDesktop = () => {
 
 // Mobile Intro Section: Natural document flow with useInView fade animations
 const IntroSectionMobile = () => {
+  const containerRef = useRef<HTMLDivElement>(null)
+
   // Image Cycling Logic
   const [activeImageIndex, setActiveImageIndex] = useState(0)
 
-  // Age calculation moved to AgeCounter component
-
-  // Track if image section is visible to pause cycling when off-screen
-  const { ref: imageCycleRef, inView: imageCycleInView } = useInView({
-    threshold: 0.1,
-    triggerOnce: false,
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
   })
 
-  // Image cycling interval - only runs when visible
-  useEffect(() => {
-    if (!imageCycleInView) return
+  // 1. "about" moves left, "me" moves right [0 -> 0.3]
+  // On mobile, we might want less horizontal movement or rely more on scale/opacity
+  // separating them enough to clear the scaling image
+  const aboutX = useTransform(scrollYProgress, [0, 0.3], [0, -150])
+  const meX = useTransform(scrollYProgress, [0, 0.3], [0, 150])
+  const textOpacity = useTransform(scrollYProgress, [0.1, 0.3], [1, 0])
 
-    const interval = setInterval(() => {
+  // 2. Image transition [0 -> 0.6]
+  const imageOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 1])
+
+  // Mobile specific: Scale up but maybe not as huge as desktop relative to screen
+  const imageScale = useTransform(scrollYProgress, [0, 0.3, 0.6], [1, 3, 3])
+
+  // Move image UP significantly to sit at the top of the bio
+  const imageY = useTransform(scrollYProgress, [0.3, 0.6], ["0%", "-25vh"])
+
+  // 3. Info Text [0.5 -> 0.7] - appears below the image
+  const infoOpacity = useTransform(scrollYProgress, [0.5, 0.7], [0, 1])
+  const infoY = useTransform(scrollYProgress, [0.5, 0.7], [30, 0])
+
+  // 4. Quotes [0.6 -> 1.0]
+  const quote1Opacity = useTransform(scrollYProgress, [0.6, 0.8], [0, 1])
+  const quote1X = useTransform(scrollYProgress, [0.6, 0.8], [20, 0])
+  const quote2Opacity = useTransform(scrollYProgress, [0.8, 1.0], [0, 1])
+  const quote2X = useTransform(scrollYProgress, [0.8, 1.0], [20, 0])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = setInterval(() => {
       setActiveImageIndex((prev) => (prev + 1) % HOVER_IMAGES.length)
     }, 500)
 
-    return () => clearInterval(interval)
-  }, [imageCycleInView])
+    const unsubscribe = scrollYProgress.on('change', (latest) => {
+      if (latest > 0.01 && interval) {
+        clearInterval(interval)
+        interval = null
+      } else if (latest <= 0.01 && !interval) {
+        interval = setInterval(() => {
+          setActiveImageIndex((prev) => (prev + 1) % HOVER_IMAGES.length)
+        }, 500)
+      }
+    })
 
-  // useInView for fade-in triggers
-  const { scrollY } = useScroll()
-  const opacity = useTransform(scrollY, [0, 500], [1, 0])
-  const scale = useTransform(scrollY, [0, 500], [1, 1.5]) // Scales up as it fades out
-
-  const { ref: imageRef, inView: imageInView } = useInView({ threshold: 0.3, triggerOnce: true })
-  const { ref: infoRef, inView: infoInView } = useInView({ threshold: 0.2, triggerOnce: true })
-  const { ref: quote1Ref, inView: quote1InView } = useInView({ threshold: 0.2, triggerOnce: true })
-  const { ref: quote2Ref, inView: quote2InView } = useInView({ threshold: 0.2, triggerOnce: true })
-  const { ref: quote3Ref, inView: quote3InView } = useInView({ threshold: 0.2, triggerOnce: true })
+    return () => {
+      if (interval) clearInterval(interval)
+      unsubscribe()
+    }
+  }, [scrollYProgress])
 
   return (
-    <section className="min-h-screen w-full">
-      {/* About me title - Fixed Background */}
-      <div className="fixed inset-0 h-[100dvh] flex items-center justify-center z-0 pointer-events-none">
-        <motion.h1
-          initial={{ opacity: 1, scale: 1 }}
-          style={{ opacity, scale }}
-          className="text-[4rem] font-bold tracking-tighter text-center text-black"
-        >
-          About me
-        </motion.h1>
-      </div>
+    <section ref={containerRef} className="relative h-[200vh]">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center">
 
-      {/* Scrollable Content Wrapper */}
-      <div className="relative z-10">
-        {/* Spacer to push content below the fixed title */}
-        <div className="h-[100dvh] w-full" />
-
-        {/* Image - fades in when scrolled to */}
+        {/* Split Text Layer */}
         <motion.div
-          ref={(node) => {
-            // Combine refs for both imageRef (fade-in) and imageCycleRef (cycling control)
-            imageRef(node)
-            imageCycleRef(node)
-          }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: imageInView ? 1 : 0, scale: imageInView ? 1 : 0.8 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex justify-center mb-12 px-6"
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 mr-[3.5rem]"
+          style={{ opacity: textOpacity }}
         >
-          <div className="relative h-[40vh] aspect-[3/4] rounded-[20px] overflow-hidden shadow-2xl bg-white">
-            {HOVER_IMAGES.map((img, index) => (
-              <motion.img
-                key={index}
-                src={img}
-                alt="Profile"
-                className="absolute inset-0 w-full h-full object-cover"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: index === activeImageIndex ? 1 : 0 }}
-                transition={{ duration: 0.5 }}
-              />
-            ))}
+          <div className="relative flex items-center justify-center gap-4">
+            <motion.h1
+              style={{ x: aboutX }}
+              className="text-[3rem] font-bold tracking-tighter"
+            >
+              About
+            </motion.h1>
+
+            {/* Spacer for image */}
+            <div className="w-[1.5rem] aspect-[3/4]" />
+
+            <motion.h1
+              style={{ x: meX }}
+              className="text-[3rem] font-bold tracking-tighter"
+            >
+              Me
+            </motion.h1>
           </div>
         </motion.div>
 
-        {/* Biographical content - flows naturally, fades in progressively */}
-        <div className="max-w-md mx-auto space-y-6 bg-[#FFFCF5]/80 backdrop-blur-sm p-4 rounded-2xl">
+        {/* Cycling Image */}
+        <motion.div
+          style={{
+            scale: imageScale,
+            opacity: imageOpacity,
+            y: imageY,
+          }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[3rem] aspect-[3/4] rounded-[4px] overflow-hidden shadow-2xl origin-center z-30"
+        >
+          {HOVER_IMAGES.map((img, index) => (
+            <motion.img
+              key={index}
+              src={img}
+              alt="Profile"
+              className="absolute inset-0 w-full h-full object-cover"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: index === activeImageIndex ? 1 : 0 }}
+              transition={{ duration: 0.5 }}
+            />
+          ))}
+        </motion.div>
+
+        {/* Biographical Content - positioned below where the image ends up */}
+        <div className="absolute inset-x-0 top-[42vh] flex flex-col items-center justify-center pointer-events-none w-full px-6">
+          {/* Offset container to push content below the raised image */}
           <motion.div
-            ref={infoRef}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: infoInView ? 1 : 0, y: infoInView ? 0 : 20 }}
-            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center text-center max-w-sm mx-auto space-y-4"
+            style={{
+              opacity: infoOpacity,
+              y: infoY
+            }}
           >
-            <h2 className="text-[32px] font-bold leading-[1.1] tracking-tight mb-2">
-              I am Benedict
-            </h2>
-            <p className="text-lg font-bold text-black/90 tracking-wide">Software Engineer</p>
-            <div className="flex flex-col mt-1">
-              <p className="text-sm text-black/60 font-medium tabular-nums tracking-wide"><AgeCounter /> years old</p>
-              <p className="text-sm text-black/60 font-medium tracking-wide">Based in Leipzig, Germany</p>
+            <div className="space-y-2 pointer-events-auto">
+              <h2 className="text-3xl font-bold leading-tight">
+                I am Benedict
+              </h2>
+              <p className="text-lg font-bold text-black/90">Software Engineer</p>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-black/60 font-medium tabular-nums text-sm"><AgeCounter /> years old</p>
+                <p className="text-black/60 font-medium text-sm">Based in Leipzig, Germany</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pointer-events-auto">
+              <motion.div style={{ opacity: quote1Opacity, x: quote1X }}>
+                <p className="text-base leading-relaxed font-[system-ui] text-black/80 font-light">
+                  I grew up in a small town in Germany, developing an early fascination with technology and design.
+                </p>
+              </motion.div>
+              <motion.div style={{ opacity: quote2Opacity, x: quote2X }}>
+                <p className="text-base leading-relaxed font-[system-ui] text-black/80 font-light">
+                  My journey began during university, building my first mobile app—combining beautiful interfaces with robust functionality.
+                </p>
+              </motion.div>
             </div>
           </motion.div>
-
-          <motion.div
-            ref={quote1Ref}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: quote1InView ? 1 : 0, y: quote1InView ? 0 : 20 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
-              I grew up in a small town in Germany, where I developed an early fascination with technology and design. This curiosity led me to study Computer Science, where I discovered my passion for creating seamless user experiences.
-            </p>
-          </motion.div>
-
-          <motion.div
-            ref={quote2Ref}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: quote2InView ? 1 : 0, y: quote2InView ? 0 : 20 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-4"
-          >
-            <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
-              My journey into app development began during university, building my first mobile application. I was captivated by the challenge of combining beautiful interfaces with robust functionality.
-            </p>
-          </motion.div>
-          <motion.div
-            ref={quote3Ref}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: quote3InView ? 1 : 0, y: quote3InView ? 0 : 20 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-[14px] leading-[1.5] font-[system-ui] text-black/80 tracking-wide font-light">
-              I believe in building software that not only solves problems but delights users. Clean code, thoughtful design, and attention to detail are at the core of everything I create.
-            </p>
-          </motion.div>
         </div>
+
       </div>
     </section>
   )
@@ -519,7 +535,7 @@ export default function About() {
       {/* Background inherits dynamic animation from body */}
       {/* Navigation Back */}
       <nav className="fixed top-0 left-0 w-full p-12 z-50 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold hover:opacity-50 transition-opacity">
+        <Link href="/" className="text-xl font-bold cursor-none hover:opacity-50 transition-opacity">
           Benedict Kunzmann
         </Link>
         <Link href="/" className="text-[18px] text-black/70 hover:opacity-100 transition-opacity cursor-none">

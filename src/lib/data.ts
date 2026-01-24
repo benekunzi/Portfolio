@@ -7,6 +7,8 @@ export interface Project {
     aspectRatio: "portrait" | "landscape";
     description: string;
     techStack: string[];
+    showCases: string[];
+    gitHubLink: string;
 }
 
 export const PROJECTS: Project[] = [
@@ -17,8 +19,22 @@ export const PROJECTS: Project[] = [
         videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
         videoWidth: "300px",
         aspectRatio: "portrait",
-        description: "A seamless way to reshare content directly in direct messages, focusing on fluidity and reduced friction. Implemented with optimistic UI updates for instant feedback.",
-        techStack: ["React", "TypeScript", "Node.js", "WebSocket"]
+        description: "Is a new social app where users only on focusing on their friends instead of the whole world and giving their posts more love and focus.",
+        techStack: ["Expo", "React Native", "Supabase", "Realtime", "App", "Typescript", "FullStack"],
+        showCases: [],
+        gitHubLink: "",
+    },
+    {
+        id: "OneWord",
+        title: "OneWord",
+        year: "2025",
+        videoUrl: "https://vz-f794a406-19c.b-cdn.net/b2646493-dc8b-4e32-b9fd-198a9ed3cfa2/playlist.m3u8",
+        videoWidth: "300px",
+        aspectRatio: "portrait",
+        description: "OneWord is a revolutionary speed reading mobile application that helps users read faster and retain more through Rapid Serial Visual Presentation (RSVP) technology.",
+        techStack: ["Expo", "React Native", "Firebase", "Typescript", "App"],
+        showCases: [],
+        gitHubLink: "https://github.com/benekunzi/OneWord",
     },
     {
         id: "anti-scam-app",
@@ -27,8 +43,10 @@ export const PROJECTS: Project[] = [
         videoUrl: "https://vz-f794a406-19c.b-cdn.net/8ee926b5-466c-47c0-a6c4-1677689c5c68/playlist.m3u8",
         videoWidth: "300px",
         aspectRatio: "portrait",
-        description: "High-performance media viewer supporting 8K images and 4K HDR videos. Features distinct gestures for dismissal and zoom, mimicking native OS behaviors on the web.",
-        techStack: ["WebGL", "Vue.js", "Pointer Events API"]
+        description: "Ene is a sophisticated mobile application designed to protect users from modern digital scams. By leveraging advanced AI analysis (powered by Google Gemini), Ene helps you identify phishing attempts and fraudulent content in real-time across multiple formats.",
+        techStack: ["Expo", "React Native", "Typescript", "App", "AI"],
+        showCases: [],
+        gitHubLink: "https://github.com/benekunzi/Anti-Scam"
     },
     {
         id: "anti-scam-app-website",
@@ -37,8 +55,10 @@ export const PROJECTS: Project[] = [
         videoUrl: "https://vz-f794a406-19c.b-cdn.net/e0112e85-6b5e-4581-a158-1481aff0a849/playlist.m3u8",
         videoWidth: "400px",
         aspectRatio: "landscape",
-        description: "Synchronization of haptic feedback with audio rhythms. Uses the Web Vibration API to create immersive tactile experiences for mobile web users.",
-        techStack: ["Web Audio API", "Vibration API", "Next.js"]
+        description: "The website for the Anti Scam App Ene. It features an app feature overview and a waitlist connected to Firebase.",
+        techStack: ["Next.js", "Firebase", "Cloudflare"],
+        showCases: [],
+        gitHubLink: "https://github.com/benekunzi/Ene-App-Website"
     },
     {
         id: "trackcloud",
@@ -47,8 +67,10 @@ export const PROJECTS: Project[] = [
         videoUrl: "https://vz-f794a406-19c.b-cdn.net/709f5d48-e2e7-4eda-853f-0252a5f3144e/playlist.m3u8",
         videoWidth: "300px",
         aspectRatio: "portrait",
-        description: "Recreating the native Apple Music experience on the web. Focus on accessibility, keyboard navigation, and pixel-perfect replication of macOS design patterns.",
-        techStack: ["Ember.js", "MusicKit JS", "SASS"]
+        description: "TrackCloud is an advanced music discovery and analysis suite for macOS. It bridges the gap between major music platforms like Spotify, SoundCloud, and Beatport, providing DJs and music producers with powerful tools for track identification, metadata enrichment, and audio analysis.",
+        techStack: ["Swift", "SwiftUI", "macOS", "Safari-Extension", "Audio-Analysis", "Firebase", "Web-Api-Integration",],
+        showCases: [],
+        gitHubLink: "https://github.com/benekunzi/TrackCloud"
     },
     {
         id: "event-app",
@@ -57,8 +79,10 @@ export const PROJECTS: Project[] = [
         videoUrl: "https://vz-f794a406-19c.b-cdn.net/640ba864-fef8-4f4a-94a0-089d78430d63/playlist.m3u8",
         videoWidth: "300px",
         aspectRatio: "portrait",
-        description: "Interactive promotional site for WWDC19. Featured complex 3D scroll animations and neon aesthetic using pure CSS and minimal JS for performance.",
-        techStack: ["HTML5", "CSS Variables", "Three.js"]
+        description: "An Event App for showing the most important information on a day in your city. Build with a custom website for organizers to upload their events.",
+        techStack: ["Swift", "SwiftUI", "Firebase", "FullStack"],
+        showCases: [],
+        gitHubLink: "https://github.com/benekunzi/event-app"
     }
 ];
 

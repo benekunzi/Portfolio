@@ -10,21 +10,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: transparent;
+            /* Changed to transparent to blend better if needed, or keep white */
             font-family: system-ui, -apple-system, sans-serif;
+            overflow: hidden;
         }
 
         .phone-frame {
-            width: 393px;
-            /* iPhone 15 width */
-            height: 852px;
-            /* iPhone 15 height */
+            height: 100%;
+            aspect-ratio: 393 / 852;
+            width: auto;
+            max-width: 100%;
             background: white;
-            border-radius: 50px;
+            border-radius: 4vh;
+            /* Responsive radius */
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.15);
-            border: 12px solid #333;
+            border: 1.5vh solid #333;
+            /* Responsive border */
             overflow: hidden;
             position: relative;
         }

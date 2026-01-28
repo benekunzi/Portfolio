@@ -98,12 +98,26 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                             <motion.video
                                 layoutId={`video-playback-${project.id}`}
                                 src={project.videoUrl}
-                                autoPlay
+                                autoPlay={project.id !== 'OneWord'}
                                 muted
                                 loop
                                 playsInline
                                 className="h-full w-full object-cover"
                             />
+                            {project.id === 'OneWord' && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.5, duration: 0.5 }}
+                                    className="absolute inset-0 z-10 bg-white"
+                                >
+                                    <iframe
+                                        src="/iframe_preview.html"
+                                        className="w-full h-full border-0"
+                                        title="OneWord Preview"
+                                    />
+                                </motion.div>
+                            )}
                         </motion.div>
                     </div>
                 </div>
